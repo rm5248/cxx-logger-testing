@@ -3,6 +3,13 @@
 #include <iostream>
 #include <functional>
 
+#include "logger.h"
+
+void event_output(LogEvent& evt);
+
+static Logger main_logger("main", event_output);
+
+#if 0
 constexpr int TRACE = 1;
 constexpr int DEBUG = 2;
 constexpr int INFO = 3;
@@ -111,23 +118,28 @@ public:
 
 };
 
+#endif
+
+void event_output(LogEvent& evt){
+    std::cout << std::format("[{:%FT%R:%S}] {} {} - {}", evt.m_time, evt.level_to_string(), evt.m_logger_name, evt.render()) << "\n";
+//    std::cout << evt.m_stacktrace << "\n";
+}
+
 int main(int argc, char** argv){
-	int level = OFF;
+    int level = Logger::OFF;
 	if(argc >= 2){
 		level = std::stoi(argv[1]);
 	}
 
 	std::cout << "level is " << level << "\n";
 
-	Logger l;
-	l.level = level;
-	l.debug1("debug1", __LINE__)();
-	l.debug1("debug1", __LINE__)();
-	l.debug("this is a test", __LINE__)();
-	l.debug_fmt("this is another test {}", __LINE__)();
-	l.debug_fmt("foo test")();
+    main_logger.set_level(level);
+    main_logger.info("Info something something")();
+    main_logger.debug("this is a test", __LINE__)();
+    main_logger.debug("this is another test {}", __LINE__)();
+    main_logger.debug("foo test")();
 	//l.debug_fmt("hi{", 5)(); // compile error due to mismatched { in format string, g++ 14.2
-	l.debug_fmt("hi {}", "todd")();
+    main_logger.debug("hi {}", "todd")();
 
 	return 0;
 }
